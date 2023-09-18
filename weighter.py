@@ -8,8 +8,18 @@ from copy import deepcopy
 
 class Weigh:
     def __init__(self):
-       self.w_serial = list()
+       self.w_serial_port = list()
        self.supply = "kpr"
+       self.simulation = 0
+       self.init_serial()
+
+    def init_serial(self):
+        if self.simulation != 2:
+            self.serial = serial.Serial(
+                "COM7", 19200, 0.015
+                )
+        else:
+            self.serial = None
 
     # 获取厂商的 modbus 指令
     def modbus_cmd(self, modbus): 
@@ -21,6 +31,16 @@ class Weigh:
             modbus = "010300500002c41a"
         return modbus
     
+    # 写串口后，读取串口的返回数据
+    def get_weight_value(self, weight_val):
+        cmd = self.modbus_cmd()
+        self.serial.write(bytes.fromhex(cmd))
+        resp = self.serial.readall()
+        weight_val = ' '.join(
+            map(lambda x: '%02x' % x, resp)
+            )
+        return weight_val
+
     def run(self):
 
         modbus_cmd = self.modbus_cmd()
