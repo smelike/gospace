@@ -1,0 +1,115 @@
+
+
+// 取串口
+sys_data.serial_dict = drive.serials_detecter.load_serial()
+
+
+// 电机
+sys_data.pipeline_motor = motor.pipeline_motor()
+sys_data.web_api.pipeline_motor = sys_data.pipeline_motor
+
+// 长宽光幕 ( 5 和 8 端子)
+sys_data.lw_curtain = leng_width_light_curtain.LengthWidthLightCurtain()
+// 高度光幕
+sys_data.h_curtain = height_light_curtain.HeightLightCurtain()
+
+// 称重对象
+sys_data.Weigh = weighting.Weigh()
+sys_data.h_curtain.weight_obj = sys_data.Weigh
+sys_data.web_api.weight_serial_first = sys_data.Weigh.weight_serial_first
+
+// 电机线程
+thread_motor = sys_data.thread_motor
+sys_data.pipeline_motor.weight_object = sys_data.Weigh
+sys_data.pipeline_motor.t_motor = thread_motor
+sys_data.web_api.thread_motor = thread_motor
+
+
+# sys_data.pipeline_motor.motor_turn_on()
+# 继电器
+thread_motor.loop_create_thread(func=sys_data.pipeline_motor.relay_laser_run)
+# # 重量
+thread_motor.loop_create_thread(func=sys_data.Weigh.run)
+# 条形码服务接收
+thread_motor.loop_create_thread(func=rest_server_run.main_run)
+
+# 高
+thread_motor.loop_create_thread(func=sys_data.h_curtain.run)
+# 长宽
+thread_motor.loop_create_thread(func=sys_data.lw_curtain.run)
+# debug显示实时状态到前端
+thread_motor.loop_create_thread(func=data_parse.send_debug_data_thread)
+if sys_data.web_api.config.get("generate_yolo_pic", 1):
+	# 抠图工具检查
+	thread_motor.loop_create_thread(func=data_parse.yolo_check)
+if os.path.exists(r"D:\nextsls\temp\upload.json"):
+	with open(r"D:\nextsls\temp\upload.json", "r") as f:
+		json_data = f.read()
+		f.close()
+		if json_data:
+			try:
+				upload_dict = json.loads(json_data)
+				sys_data.upload_dict.update(json.loads(json_data))
+			except Exception as e:
+				upload_dict = {}
+if sys_data.web_api.config.get("img_upload_server", 1):
+	# 上传复制图片线程
+	thread_motor.loop_create_thread(func=data_parse.local_up_img_thread)
+	# 上传upload图片线程
+	thread_motor.loop_create_thread(func=data_parse.upload_img)
+# 异常启动线程
+thread_motor.loop_create_thread(func=data_parse.exception_check)
+# 声音播放
+thread_motor.loop_create_thread(func=fn.play_sound)
+# 临时文件异常检测
+thread_motor.loop_create_thread(func=data_parse.check_uploads_loop)
+# 手动补码控制电机启停检测
+thread_motor.loop_create_thread(func=data_parse.manual_barcode_check)
+# websocket服务端
+if sys_data.web_api.config.get("websocket_server", False):
+	thread_motor.create_thread(func=thrids_pick_up.websockets_main_run)
+# # 同步数据到数据库中
+# if sys_data.web_api.config.get("db_sync_interval", 0) > 0:
+#     thread_motor.loop_create_thread(func=data_parse.sync_data_to_db)
+url = sys_data.web_api.response_data.get('data').get('load_url')
+if '?' in url:
+	url += '&' + 'mode=' + str(sys_data.web_api.config['mode']) + '&debug=' + str(
+		sys_data.web_api.config['debug'])
+else:
+	url += '?' + 'mode=' + str(sys_data.web_api.config['mode']) + '&debug=' + str(
+		sys_data.web_api.config['debug'])
+# url = "http://localhost:8000/index/html_test"
+# api.config["debug"] = 0
+# 配置pywebview关闭提示的中文翻译
+sys_data.web_api.current_pid = os.getpid()
+window = webview.create_window(
+	title='新智慧窗口',
+	text_select=True,
+	url=url,
+	js_api=sys_data.web_api,
+	on_top=False if sys_data.web_api.config['stays_on_top_hint'] == 1 else False,
+	width=int(sys_data.web_api.config['win_min_width']),
+	height=int(sys_data.web_api.config['win_min_height']),
+	# browser_engine=webview.BROWSER_ENGINE_CHROMIUM,
+	frameless=True,
+)
+sys_data.web_api.window = window
+loading_process.kill()
+webview.start(debug=sys_data.web_api.config["debug"])
+else:
+with open(os.path.dirname(os.path.abspath(__file__)) + '/templates/' + initialize_status + '.html', 'r+',
+		  encoding='utf-8') as f:
+	html = f.read()
+window = webview.create_window(
+	title='新智慧',
+	text_select=True,
+	html=html,
+	js_api=web_api,
+	on_top=True,
+	width=1000,
+	height=800,
+	resizable=False,
+	# frameless=True
+)
+loading_process.kill()
+webview.start()
