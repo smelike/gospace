@@ -4,7 +4,7 @@ import serial
 import time
 
 
-class Weigh:
+class Weighter:
     def __init__(self):
        self.w_serial_port = list()
        self.supply = "kpr"
