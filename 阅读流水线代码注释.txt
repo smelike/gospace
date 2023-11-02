@@ -4,13 +4,16 @@
 sys_data.serial_dict = drive.serials_detecter.load_serial()
 
 
-// 电机
+// device/motor 电机启动控制文件
+// 
 sys_data.pipeline_motor = motor.pipeline_motor()
 sys_data.web_api.pipeline_motor = sys_data.pipeline_motor
 
 // 长宽光幕 ( 5 和 8 端子)
+// device/leng_width_light_curtain
 sys_data.lw_curtain = leng_width_light_curtain.LengthWidthLightCurtain()
-// 高度光幕
+
+// 高度光幕 height_light_curtain > device/height_light_curtain
 sys_data.h_curtain = height_light_curtain.HeightLightCurtain()
 
 // 称重对象
@@ -27,7 +30,17 @@ sys_data.web_api.thread_motor = thread_motor
 
 # sys_data.pipeline_motor.motor_turn_on()
 # 继电器
+// relay_laser_run ->  执行指令 FE 02 00 00 00 04 6D C6 查询光耦输入
+/*
+	查询光耦的状态
+发送指令码：FE 02 00 00 00 04 6D C6
+返回值：FE 02 00 00 00 04 6D C6，查询地址 254 的 4 个光耦状态数量。
+01 就是 0 0 0 1，（高位在前）那就是 第一路遮挡了
+FE 02 01 08 90 5A
+08 -> 1000 这样就是 第四路
+*/
 thread_motor.loop_create_thread(func=sys_data.pipeline_motor.relay_laser_run)
+
 # # 重量
 thread_motor.loop_create_thread(func=sys_data.Weigh.run)
 # 条形码服务接收
@@ -57,6 +70,7 @@ if sys_data.web_api.config.get("img_upload_server", 1):
 	thread_motor.loop_create_thread(func=data_parse.local_up_img_thread)
 	# 上传upload图片线程
 	thread_motor.loop_create_thread(func=data_parse.upload_img)
+	
 # 异常启动线程
 thread_motor.loop_create_thread(func=data_parse.exception_check)
 # 声音播放

@@ -1,0 +1,13 @@
+ # 构建命令 地址1b,功能码1b,寄存器地址2b,数据2b，校验码2b
+                        motor_addr = str(hex(int(motor_value['addr'])))[2:].zfill(2)
+                        motor_speed = str(hex(int(motor_value['speed'])))[2:].zfill(4)
+                        speed_cmd = f"{motor_addr} 06 20 01 {motor_speed[:2]} {motor_speed[2:]}"
+                        speed_cmd_crc_16 = crc_16.get_crc16_modbus(speed_cmd)
+                        speed_cmd = f"{speed_cmd} {speed_cmd_crc_16}"
+                        # 设定速度
+                        result = data_parse.hexShow(self.motor_write(speed_cmd, motor_value.get("com",
+                                                                                                sys_data.serial_dict[
+                                                                                                    "motor_serial"][
+                                                                                                    "serial_port"]))).replace(
+                            " ", "")
+                        speed_cmd = speed_cmd.replace(" ", "")
