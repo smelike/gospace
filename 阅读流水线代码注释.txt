@@ -32,12 +32,11 @@ sys_data.web_api.thread_motor = thread_motor
 # 继电器
 // relay_laser_run ->  执行指令 FE 02 00 00 00 04 6D C6 查询光耦输入
 /*
-	查询光耦的状态
+查询光耦的状态：
 发送指令码：FE 02 00 00 00 04 6D C6
 返回值：FE 02 00 00 00 04 6D C6，查询地址 254 的 4 个光耦状态数量。
 01 就是 0 0 0 1，（高位在前）那就是 第一路遮挡了
-FE 02 01 08 90 5A
-08 -> 1000 这样就是 第四路
+FE 02 01 08 90 5A， 08 -> 1000 这样就是 第四路
 */
 thread_motor.loop_create_thread(func=sys_data.pipeline_motor.relay_laser_run)
 
