@@ -3,7 +3,8 @@ import time
 import serial
 import serial.tools.list_ports
 
-
+# 定义一个类，用于实现朗汉得 LH-IO404 继电器控制
+# LH-IO404 四路输入 DI，四路输出 DO，四路继电器控制
 
 class Relayer:
 
@@ -13,6 +14,39 @@ class Relayer:
             print("no serial devices.")
 
         self.ser = serial.Serial("COM5", 9600, timeout=0.02)
+        self.ser.flushInput()
+    
+    # 查询四路开关量输入状态
+    def read_di_status(self):
+        # 使用循环监听，读取多少秒
+        cmd = "FE 02 00 00 00 04 6D C6"
+        self.ser.write(bytes.fromhex(cmd))
+        resp = self.ser.readall()
+        # 第四字节是开关量的状态值，如 01，代表的是高位在前，低位在后，01 转换为二进制 00 01
+        status_str = ' '.join(
+            map(lambda x: '%02x' % x, resp)
+            )
+        return status_str
+
+    # 打开关闭继电器
+    def switch_relay(self, number):
+        if number == 1:
+            opens = "FE 05 00 00 FF 00 98 35"
+            close = "FE 05 00 00 00 00 D9 C5"
+        elif number == 2:
+            opens = "FE 05 00 01 FF 00 C9 F5"
+            close = "FE 05 00 01 00 00 88 05"
+        elif number == 3:
+            opens = "FE 05 00 02 FF 00 39 F5"
+            close = "FE 05 00 02 00 00 78 05"
+        elif number == 4:
+            opens = "FE 05 00 03 FF 00 68 35"
+            close = "FE 05 00 03 00 00 29 C5"
+        else:
+            # 全开
+            opens = "FE 0F 00 00 00 04 01 0F 31 96"
+            # 全闭
+            close = "FE 0F 00 00 00 04 01 00 71 92"
         
 
     def execute_command(self, command):
