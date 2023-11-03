@@ -6,6 +6,9 @@ import serial.tools.list_ports
 # 定义一个类，用于实现朗汉得 LH-IO404 继电器控制
 # LH-IO404 四路输入 DI，四路输出 DO，四路继电器控制
 
+
+## 两路光电，通过出货口的光电状态，来决定电机的是否暂停和转动吗？
+
 class Relayer:
 
     def __init__(self):
@@ -60,13 +63,27 @@ class Relayer:
 
 if __name__ == "__main__":
     relayer = Relayer()
-    result = relayer.execute_command("FE 02 00 00 00 04 6D C6")
+    status1 = []
+    status0 = []
+    while True:
+        result = relayer.execute_command("FE 02 00 00 00 04 6D C6")
+        str = " ".join(map(lambda x: "%02X" % x, result))
+        if(result[3] > 0):
+            print("遮挡")
+            status1.append(str)
+        else:
+            print("未遮挡")
+            status0.append(str)
+        if (len(status1) and len(status0)):
+            break
     # result = bytes('FF', "utf-8")
-    str = " ".join(map(lambda x: "%02X" % x, result))
+    #    str = " ".join(map(lambda x: "%02X" % x, result))
+    #    status.append(str)
+    #    print(status)
     # lambda x: "0x%02x" % x
     # 0xfe 0x02 0x01 0x08 0x90 0x5a
-    print(result)
-    print(str)
+    # print(result)
+    print(status0, status1)
     x = 2
     xr = lambda x: "%02X" % x
     print(xr(0))
