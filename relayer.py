@@ -11,6 +11,9 @@ import serial.tools.list_ports
 
 class Relayer:
 
+    # 是否在过货的状态
+    do_status = False
+
     def __init__(self):
         port_list = list(serial.tools.list_ports.comports())
         if len(port_list) <= 0:
@@ -31,6 +34,23 @@ class Relayer:
             )
         return status_str
 
+    # 查询是否在进货或出货
+    def read_do_status(self): 
+        status1 = []
+        status0 = []
+        while True:
+            result = relayer.execute_command("FE 02 00 00 00 04 6D C6")
+            str = " ".join(map(lambda x: "%02X" % x, result))
+            if(result[3] > 0):
+                print("遮挡")
+                status1.append(str)
+            else:
+                print("未遮挡")
+                status0.append(str)
+            if (len(status1) and len(status0)):
+                self.do_status = True
+                time.sleep(0.1)
+                continue
     # 打开关闭继电器
     def switch_relay(self, number):
         if number == 1:
