@@ -62,7 +62,7 @@ class Relayer:
                 self.do_status = -1
                 status0.clear()
                 status1.clear()
-                break
+                # break
                 
     # 打开关闭继电器
     def switch_relay(self, number):
