@@ -14,7 +14,7 @@ class Weighter:
     def init_serial(self):
         if self.simulation != 2:
             self.serial = serial.Serial(
-                "COM27", 19200, timeout = 0.015
+                "COM3", 19200, timeout = 0.015
                 )
         else:
             self.serial = None
@@ -33,8 +33,8 @@ class Weighter:
     def get_weight_value(self):
         cmd = self.modbus_cmd()
         self.serial.write(bytes.fromhex(cmd))
-        resp = self.serial.readall()
-        print(resp, "---")
+        resp = self.serial.readline()
+        print(resp, "::\r\n")
         weight_val_str = ' '.join(
             map(lambda x: '%02x' % x, resp)
             )
@@ -45,17 +45,21 @@ class Weighter:
     # 读取内码值和净重
 
     def run(self):
-
+        weights = []
+        start = time.time()
         while True:
             try:
-               weight_val_str = self.get_weight_value()
-               print(weight_val_str, "run--\n\n\n")
+                val_str = self.get_weight_value()
+                weights.append(val_str) if val_str else None
+                if time.time() - start >= 1:
+                    print(len(weights), weights)
+                    break
             except Exception as e:
-               print("读取失败")
-            time.sleep(0.0001)
+               print("读取失败,重新启动程序和设备")
+            time.sleep(0.002)
 
 
 if __name__ == "__main__":
-    weighting = Weigh()
+    weighting = Weighter()
     weighting.run()
-    time.sleep(10000)
+    # time.sleep(2000)

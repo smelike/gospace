@@ -15,7 +15,9 @@ class Weigh:
             self.min_weight = 0
         if sys_data.web_api.config["simulation"] != 2:
             self.weight_serial = serial.Serial(sys_data.serial_dict["weight_serial"]["serial_port"],
-                                               sys_data.serial_dict["weight_serial"]["baud_rate"], timeout=sys_data.web_api.config.get("weight_serial_timeout", 0.015))
+                                               sys_data.serial_dict["weight_serial"]["baud_rate"], 
+											   timeout=sys_data.web_api.config.get("weight_serial_timeout", 0.015)
+											   )
         else:
             self.weight_serial = None
         self.weight_data = []  # [重量]
@@ -219,7 +221,6 @@ class Weigh:
                         current_weight = round(-int(ture_form, 2) * 0.01, 3)
                     else:
                         current_weight = round(int(ture_form, 2) * 0.01, 3)
-                # elif sys_data.web_api.config["weight_module"] == 'xy':
                 else:
                     current_weight = round(int("".join(response_str.split(" ")[3:7]), 16) * 0.001, 3)
                 if time.time() - self.send_time > 0.5:
@@ -234,7 +235,7 @@ class Weigh:
                     sys_data.data_dict["current_weight"] = False
                     self.current_weight = False
                     self.t_motor.create_thread(func=self.event_end)
-                # fn.dp(current_weight)
+					
                 self.last_weight = current_weight
                 if not sys_data.weight_recode_list:
                     sys_data.weight_recode_list.append({"weight": current_weight, "time": time.time()})
