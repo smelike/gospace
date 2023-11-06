@@ -50,21 +50,19 @@ class Relayer:
             else:
                 print("未遮挡")
                 # 未遮挡时，0 和 1 都是有状态值的，代表着货物过完了
-                if len(status0) and len(status1): 
+                if len(status1) and (self.do_status == 1): 
                     self.do_status = 0
                     status1.append(str)
-                status0.append(str)
-                # 清除数据，防止空转时，数据堆积
-                if len(status0) >= 100:
-                    print(len(status0), status0)
                     status0.clear()
-                    # break
-        
+                status0.append(str)
+               
+            # 清除数据，防止空转时，数据堆积，光电回到默认值
             if self.do_status == 0:
                 print(status0, status1)
                 self.do_status = -1
                 status0.clear()
                 status1.clear()
+                break
                 
     # 打开关闭继电器
     def switch_relay(self, number):
