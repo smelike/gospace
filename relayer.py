@@ -11,8 +11,8 @@ import serial.tools.list_ports
 
 class Relayer:
 
-    # 是否在过货的状态
-    do_status = False
+    # 是否在过货的状态, -1 - 默认，1 - 过货遮挡，0 -  未遮挡
+    do_status = -1
 
     def __init__(self):
         port_list = list(serial.tools.list_ports.comports())
@@ -36,21 +36,36 @@ class Relayer:
 
     # 查询是否在进货或出货
     def read_do_status(self): 
-        status1 = []
+       
         status0 = []
+        status1 = []
         while True:
             result = relayer.execute_command("FE 02 00 00 00 04 6D C6")
             str = " ".join(map(lambda x: "%02X" % x, result))
+           
             if(result[3] > 0):
                 print("遮挡")
+                self.do_status = 1
                 status1.append(str)
             else:
                 print("未遮挡")
+                # 未遮挡时，0 和 1 都是有状态值的，代表着货物过完了
+                if len(status0) and len(status1): 
+                    self.do_status = 0
+                    status1.append(str)
                 status0.append(str)
-            if (len(status1) and len(status0)):
-                self.do_status = True
-                time.sleep(0.1)
-                continue
+                # 清除数据，防止空转时，数据堆积
+                if len(status0) >= 100:
+                    print(len(status0), status0)
+                    status0.clear()
+                    # break
+        
+            if self.do_status == 0:
+                print(status0, status1)
+                self.do_status = -1
+                status0.clear()
+                status1.clear()
+                
     # 打开关闭继电器
     def switch_relay(self, number):
         if number == 1:
@@ -75,7 +90,9 @@ class Relayer:
     def execute_command(self, command):
         while True:
             self.ser.write(bytes.fromhex(command))
-            time.sleep(0.1)
+            # 10ms 后再读取, 防止读取不到数据
+            # 10ms 是可以取到最多 14 条数据
+            time.sleep(0.01) 
             result = self.ser.readall()
             if self.ser.in_waiting > 0:
                 break
@@ -83,27 +100,7 @@ class Relayer:
 
 if __name__ == "__main__":
     relayer = Relayer()
-    status1 = []
-    status0 = []
-    while True:
-        result = relayer.execute_command("FE 02 00 00 00 04 6D C6")
-        str = " ".join(map(lambda x: "%02X" % x, result))
-        if(result[3] > 0):
-            print("遮挡")
-            status1.append(str)
-        else:
-            print("未遮挡")
-            status0.append(str)
-        if (len(status1) and len(status0)):
-            break
-    # result = bytes('FF', "utf-8")
-    #    str = " ".join(map(lambda x: "%02X" % x, result))
-    #    status.append(str)
-    #    print(status)
-    # lambda x: "0x%02x" % x
-    # 0xfe 0x02 0x01 0x08 0x90 0x5a
-    # print(result)
-    print(status0, status1)
-    x = 2
-    xr = lambda x: "%02X" % x
-    print(xr(0))
+    relayer.read_do_status()
+    # x = 2
+    # xr = lambda x: "%02X" % x
+    # print(xr(0))
