@@ -33,8 +33,10 @@ class Weighter:
     def get_weight_value(self):
         cmd = self.modbus_cmd()
         self.serial.write(bytes.fromhex(cmd))
-        resp = self.serial.readline()
-        print(resp, "::\r\n")
+        # 读取 9 bytes 的返回数据
+        resp = self.serial.read(9)
+        # '01 03 04 ff ff ff f9 7b a5'
+        print(len(resp), resp, "::\r\n")
         weight_val_str = ' '.join(
             map(lambda x: '%02x' % x, resp)
             )

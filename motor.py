@@ -17,8 +17,11 @@ class pipeline_motor:
         self.motor_serial_cfg = dict()
         if sys_data.web_api.config["simulation"] != 2:
             if sys_data.serial_dict["relay_serial"]:
-                self.relay_serial = serial.Serial(sys_data.serial_dict["relay_serial"]["serial_port"], 9600,
-                                                  timeout=sys_data.web_api.config.get("relay_serial_timeout", 0.02))
+                self.relay_serial = serial.Serial(
+                    sys_data.serial_dict["relay_serial"]["serial_port"], 
+                    9600,
+                    timeout=sys_data.web_api.config.get("relay_serial_timeout", 0.02)
+                    )
             else:
                 fn.logger(f"没有寻找到继电器串口", level='error', r_path=sys_data.r_path)
             if sys_data.serial_dict.get("motor_serial", None):
@@ -37,7 +40,13 @@ class pipeline_motor:
                             if motor_value.get("com") not in self.motor_serial_list:
                                 try:
                                     exec(
-                                        f"""self.motor_serial_list["{motor_value.get("com")}"] = serial.Serial("{motor_value.get("com")}", {sys_data.web_api.config.get("motor_cfg", {}).get("given_baud_rate", 19200)}, timeout=sys_data.web_api.config.get("relay_serial_timeout", 0.02))""")
+                                        f"""
+                                        self.motor_serial_list["{motor_value.get("com")}"] 
+                                        = serial.Serial(
+                                            "{motor_value.get("com")}", 
+                                        {sys_data.web_api.config.get("motor_cfg", {}).get("given_baud_rate", 19200)}, 
+                                        timeout=sys_data.web_api.config.get("relay_serial_timeout", 0.02))
+                                        """)
                                     exec(f"""self.motor_serial_list_lock["{motor_value.get("com")}"]= 0""")
                                 except Exception as e:
                                     fn.logger(f"电机{motor_area}连接指定串口失败：{e}", level='error',
@@ -50,11 +59,11 @@ class pipeline_motor:
                         speed_cmd = f"{speed_cmd} {speed_cmd_crc_16}"
                         # 设定速度
                         result = data_parse.hexShow(
-                            self.motor_write(speed_cmd, 
-                            motor_value.get("com",
-                            sys_data.serial_dict["motor_serial"]["serial_port"])
+                            self.motor_write(
+                                speed_cmd, 
+                                motor_value.get("com", sys_data.serial_dict["motor_serial"]["serial_port"])
                             )).replace(" ", "")
-                        speed_cmd = speed_cmd.replace(" ", "")
+                            speed_cmd = speed_cmd.replace(" ", "")
                         if result == speed_cmd:
                             fn.logger(f"设定电机{motor_area}  转速：{motor_value['speed']} 成功", level='info',
                                       r_path=sys_data.r_path)
