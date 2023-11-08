@@ -1,5 +1,6 @@
 import sys
 import serial
+import time
 
 class Redmot:
     # ZDRV.C20 - 120S2
@@ -25,7 +26,7 @@ class Redmot:
     # CRC校验码，先发送低字节，后发送高字节；
 
     # 正转运行 - 发送和应答数据： 
-    # 01 06 20 00 00 00 01 43 CA 
+    # 01 06 20 00 00 01 43 CA 
     # 01 06 20 00 00 01 43 CA (地址2000H写0x01)
 
     # 反转运行 - 发送和应答数据
@@ -49,36 +50,72 @@ class Redmot:
     #(地址 200FH 写 0x01)
 
     # 读故障码 - 发送和应答数据：
-    # 01 03 21 02 00 01 2F F6 - 01 03 02 00 0A 38 43 
-    # 01 03 02 00 00 B8 44
+    # 01 03 21 02 00 01 2F F6 - 01 03 02 00 0A 38 43/01 03 02 00 00 B8 44
     # (读地址 2102H，故障码：0x0A 欠压故障)
 
     def __init__(self):
         # 串口
-        self.ser = serial.Serial("COM4", 19200, timeout=0.05)
+        try:
+            self.ser = serial.Serial("COM4", 19200, timeout=0.05)
+        except IOError as e:
+            print(e)
+            exit("串口被占用：{%s}" % e)
 
 
     # 启动电机
     def turn_on(self):
         # 01 06 20 00 00 00 01 43 CA
-        resp = self.ser.write(bytes.fromhex("01 06 20 00 00 00 01 43 CA"))
-        if resp:
+        cmd_byte = bytes.fromhex("01 06 20 00 00 01 43 CA")
+        bl = self.ser.write(cmd_byte)
+        resp = self.ser.readall()
+        if resp == cmd_byte:
             print("启动电机成功", resp)
         else:
             print("启动电机失败", resp)
     
     # 关闭电机
-    def turn_off(self):
-        pass
+    def turn_stop(self):
+        if self.ser.is_open:
+            cmd_byte = bytes.fromhex("01 06 20 00 00 05 42 09")
+            write_len = self.ser.write(cmd_byte)
+            resp = self.ser.readall()
+            print(" ".join(map(lambda x: "%02x" % x, resp)))
+            if resp == cmd_byte:
+                print("关闭电机成功", resp)
+            else:
+                print("关闭电机失败", resp)
+        else:
+            print("串口未打开")
+
+    def set_rpm(self, rpm = 3000):
+        # 3000rpm - 01 06 20 01 0B B8 D4 88
+        cmd_byte = bytes.fromhex("01 06 20 01 0B B8 D4 88")
+        bl = self.ser.write(cmd_byte)
+        resp = self.ser.readall()
+        print(" ".join(map(lambda x: "%02x" % x, resp)))
+        if resp == cmd_byte:
+            print("设置转速成功", resp)
+        else:
+            print("设置转速失败", resp)
 
     # 电机状态
     def run_status(self):
-        pass
+        if self.ser.is_open:
+            cmd_byte = bytes.fromhex("01 03 21 02 00 01 2F F6")
+            write_len = self.ser.write(cmd_byte)
+            resp = self.ser.readall()
+            print(" ".join(map(lambda x: "%02x" % x, resp)))
+            print("电机状态码：", resp)
+        else:
+            print("串口未打开")
 
 if __name__ == "__main__":
         print("start")
         rm = Redmot()
         rm.turn_on()
-        time.sleep(1)
-        rm.turn_off()
+        time.sleep(8)
+        rm.set_rpm()
+        # rm.turn_on()
+        time.sleep(8)
+        rm.turn_stop()
         print("end")
