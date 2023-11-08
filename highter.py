@@ -7,7 +7,7 @@ class Highter:
 
     def __init__(self):
         # 串口
-        ser = serial.Serial(portTmp[0], 115200, timeout=0.05)
+        ser = serial.Serial("COM8", 115200, timeout=0.05)
         result = data_parse.hexShow(SerialOp.read(1000))
 
     def formatHex(argv):
