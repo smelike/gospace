@@ -35,9 +35,9 @@ class serial_device_base:
             # print(self.ser.out_waiting)
             # time.sleep(0.05)
             if bytes_written:
-                while not self.ser.out_waiting:
+                while not self.ser.out_waiting and not resp:
                     resp = self.ser.readall()
-                    print(resp)
+                print(resp)
                 # self.ser.flush()
         return resp
 
