@@ -1,8 +1,6 @@
 import serial
 import time
 
-from serial.serialutil import to_bytes
-
 # 串口设备的父类
 
 class serial_device_base:
@@ -21,15 +19,26 @@ class serial_device_base:
         # pass
 
     def open_port(self):
+        if isinstance(self.ser, serial.Serial):
+            return True
         if self.port and self.baudrate:
-            self.ser = serial.Serial(self.port, self.baudrate, timeout=0.02)
-        return True if self.ser and self.ser.is_open else False
+            self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
+            if not self.ser.is_open:
+                print("open port success")
+                return False
+            # if self.ser.timeout == 1:
+            #     print("open port timeout")
+            #     return False
+            return True
+        return False
     
     # 执行指令，并返回响应值
     def execute_command(self, modbus_cmd: bytes) -> bytes:
         self.modbus_cmd = modbus_cmd
         bytes_written =  0
         resp = False
+        # print(self.open_port())
+        exit_flag = False
         if self.open_port() and not self.ser.in_waiting:
             bytes_written = self.ser.write(self.modbus_cmd)
             # print(self.ser.out_waiting)
@@ -37,13 +46,17 @@ class serial_device_base:
             if bytes_written:
                 while not self.ser.out_waiting and not resp:
                     resp = self.ser.readall()
-                print(resp)
-                # self.ser.flush()
+                # print(resp)
+                self.ser.flush()
         return resp
 
+    def __command_queue(self):
+        pass
     # 退出时，做了串口的关闭，防止串口的占用
-    # def __exit__(self):
-    #     self.ser.close()
+    def __exit__(self):
+        self.ser.__del__()
+        # serial.close() # close() is a method of serial.Serial object, Close port immediately.
+        # serial.__del__() # close() Close port when serial port instance is free. 
 
 
 if __name__ == "__main__":
