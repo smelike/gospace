@@ -21,7 +21,7 @@ if __name__ == "__main__":
     start = time.time()
     while True:
         kpr.get_weight_value()
-        if time.time() - start > 10:
+        if time.time() - start > 1:
             str = "计算时间：{}".format(start - time.time())
             print(str)
             break

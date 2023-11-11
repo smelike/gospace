@@ -22,11 +22,11 @@ class serial_device_base:
         if isinstance(self.ser, serial.Serial):
             return True
         if self.port and self.baudrate:
-            self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
+            self.ser = serial.Serial(self.port, self.baudrate, timeout=0.015)
             if not self.ser.is_open:
                 print("open port success")
                 return False
-            # if self.ser.timeout == 1:
+            # if self.ser.timeout == 0.015:
             #     print("open port timeout")
             #     return False
             return True

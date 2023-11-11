@@ -14,7 +14,7 @@ class Weighter:
     def init_serial(self):
         if self.simulation != 2:
             self.serial = serial.Serial(
-                "COM6", 19200, timeout = 0.015
+                "COM3", 19200, timeout = 0.015
                 )
         else:
             self.serial = None
