@@ -9,11 +9,12 @@ class serial_device_base:
     port = ""
     baudrate = ""
     modbus_cmd = ""
+    timeout = 0
 
-
-    def __init__(self, port : str, baudrate : int, ):
+    def __init__(self, port : str, baudrate : int, timeout = 0):
         self.port = port
         self.baudrate = baudrate
+        self.timeout = timeout
         print(port, baudrate)
         # self.modbus_cmd = modbus_cmd
         # pass
@@ -22,7 +23,7 @@ class serial_device_base:
         if isinstance(self.ser, serial.Serial):
             return True
         if self.port and self.baudrate:
-            self.ser = serial.Serial(self.port, self.baudrate, timeout=0.015)
+            self.ser = serial.Serial(self.port, self.baudrate, timeout = self.timeout)
             if not self.ser.is_open:
                 print("open port success")
                 return False
@@ -50,6 +51,7 @@ class serial_device_base:
                 self.ser.flush()
         return resp
 
+    # 写入命令的排队队列
     def __command_queue(self):
         pass
     # 退出时，做了串口的关闭，防止串口的占用
