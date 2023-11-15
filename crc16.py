@@ -40,6 +40,31 @@ def get_crc16_modbus(hex_str):
     hex_result = hex_result[2:] + ' ' + hex_result[0:2]
     return hex_result
 
+def crc16(data: bytes):
+    crc = 0xFFFF
+    for b in data:
+        cur_byte = 0xFF & b
+        for _ in range(0, 8):
+            if (crc & 0x0001) ^ (cur_byte & 0x0001):
+                crc = (crc >> 1) ^ 0xA001
+            else:
+                crc >>= 1
+            cur_byte >>= 1
+    return crc
+
+def crc16byStr(data: str) -> int:
+    data = bytes.fromhex(data)
+    crc = 0xFFFF
+    for b in data:
+        cur_byte = 0xFF & b
+        for _ in range(0, 8):
+            if (crc & 0x0001) ^ (cur_byte & 0x0001):
+                crc = (crc >> 1) ^ 0xA001
+            else: 
+                crc >>= 1
+            cur_byte >>= 1
+    return crc
+
 if __name__ == '__main__':
     # for num in range(51):
     #     hex_num = hex(num)[2:].zfill(2)
@@ -49,3 +74,7 @@ if __name__ == '__main__':
     cmd = '01 06 30 05 0B B8'
     crc_16 = get_crc16_modbus(cmd)
     print(crc_16)
+    crc_resp = crc16byStr(cmd)
+    print(crc_resp)
+    crc_resp = crc16(bytes.fromhex(cmd))
+    print(crc_resp)
