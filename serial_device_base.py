@@ -3,21 +3,27 @@ import time
 
 # 串口设备的父类
 
-class serial_device_base:
+import serial
+import time
 
-    ser = None
-    port = ""
-    baudrate = ""
-    modbus_cmd = ""
-    timeout = 0
+class SerialDeviceBase:
+    """
+    Base class for serial devices.
+    """
 
-    def __init__(self, port : str, baudrate : int, timeout = 0):
+    def __init__(self, port: str, baudrate: int, timeout: int = 0):
+        """
+        Initialize a new instance of the SerialDeviceBase class.
+
+        :param port: The port to connect to.
+        :param baudrate: The baud rate.
+        :param timeout: The timeout value.
+        """
+        self.ser = None
         self.port = port
         self.baudrate = baudrate
         self.timeout = timeout
-        print(port, baudrate)
-        # self.modbus_cmd = modbus_cmd
-        # pass
+        self.modbus_cmd = ""
 
     def open_port(self):
         if isinstance(self.ser, serial.Serial):
@@ -33,6 +39,11 @@ class serial_device_base:
             return True
         return False
     
+    def read_data(self):
+        if self.open_port():
+            return self.ser.readall()
+        print("not open port")
+        return False
     # 执行指令，并返回响应值
     def execute_command(self, modbus_cmd: bytes) -> bytes:
         self.modbus_cmd = modbus_cmd
@@ -62,7 +73,7 @@ class serial_device_base:
 
 
 if __name__ == "__main__":
-    base = serial_device_base("COM5", 9600)
+    base = SerialDeviceBase("COM5", 9600)
     cmd = "FE0100000002A9C4"
     cmd = bytes.fromhex(cmd)
     print(cmd)

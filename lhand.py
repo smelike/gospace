@@ -1,4 +1,4 @@
-from serial_device_base import serial_device_base
+from serial_device_base import SerialDeviceBase
 import time
 import sys
 
@@ -6,7 +6,7 @@ import sys
 # 9600 速率下，1 秒内只有 3 次；
 # 19200 速率下，1 秒内可以读取 31、32 次；
 
-class Lhand(serial_device_base):
+class Lhand(SerialDeviceBase):
 
     # 调用父类的初始化函数
     def __init__(self, *args, **kwargs):
@@ -19,6 +19,8 @@ class Lhand(serial_device_base):
 
         return resp
     
+    def read_in_by_channel(self, inchannel = 1):
+        pass
     # 继电器状态切换 
     def swith():
         pass
