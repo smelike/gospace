@@ -22,7 +22,8 @@ class Weighter:
     # 获取厂商的 modbus 指令
     def modbus_cmd(self): 
         if self.supply == 'kpr':
-            modbus = "010300500002c41a"
+            modbus = "01 03 00 50 00 02 c4 1a"
+            # 01 03 00 50 00 02 C4 1A（地址80转十六进制为50）
         elif self.supply == 'xy':
             modbus = "010300000002c40b"
         else:
