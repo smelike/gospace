@@ -1,3 +1,17 @@
+import crcmod
+
+def crc16(byte_str):
+    crc = crcmod.predefined.Crc('crc-16-modbus')
+    crc.update(byte_str)
+    return crc.crcValue
+
+cmd = "01 10 00 54 00 02 04 7f ff ff ff df 34"
+cmd = " ".join(map(lambda x: "%02x" % x, int(cmd.split(), 16)))
+cmd = bytes(cmd)
+print(cmd)
+print(cmd.hex())
+cmd = bytes.fromhex(cmd)
+crc16(b'\x01\x03\x05\x00\x00\x02\xC4\x1A') 
 def get_crc16_modbus(hex_str):
     hex_str = hex_str.replace(' ', '')
     hex_str_length = len(hex_str)
@@ -100,7 +114,7 @@ if __name__ == '__main__':
     #     fn.dp(crc_16)
     #  01 10 00 54 00 02 04 7f ff ff ff 
     # cmd = '01 06 30 05 0B B8'
-    cmd = "01 10 00 54 00 02 04 7f ff ff ff"
+    cmd = "01 10 00 54 00 02 04 7f ff ff ff df 34"
     crc_16 = get_crc16_modbus(cmd)
     print(crc_16)
     crc_resp = crc16byStr(cmd)

@@ -46,10 +46,11 @@ if __name__ == "__main__":
     loop = 0
     while True:
         loop += 1
+        print("((发)){0}:".format(time.time() * 1000), modbus.hex())
         resp = highter.execute_command(modbus)
         # print(resp)
         if resp:
-            print(resp.hex())
+            print("[[收]]{0}:".format(time.time() * 1000), resp.hex())
             resp_list.append(resp)
         time.sleep(0.1)
 
