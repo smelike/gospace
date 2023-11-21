@@ -10,7 +10,7 @@ class SerialDeviceBase:
     """
     Base class for serial devices.
     """
-
+    ser = None
     def __init__(self, port: str, baudrate: int, timeout: int = 0):
         """
         Initialize a new instance of the SerialDeviceBase class.
@@ -19,11 +19,11 @@ class SerialDeviceBase:
         :param baudrate: The baud rate.
         :param timeout: The timeout value.
         """
-        self.ser = None
         self.port = port
         self.baudrate = baudrate
         self.timeout = timeout
         self.modbus_cmd = ""
+        # self.open_port()
 
     def open_port(self):
         if isinstance(self.ser, serial.Serial):
@@ -39,9 +39,11 @@ class SerialDeviceBase:
             return True
         return False
     
-    def read_data(self):
+    def read_data(self, len: int = 0) -> bytes:
         if self.open_port():
             return self.ser.readall()
+        if self.open_port and len:
+            return self.ser.read(len)
         print("not open port")
         return False
     # 执行指令，并返回响应值
@@ -49,17 +51,17 @@ class SerialDeviceBase:
         self.modbus_cmd = modbus_cmd
         bytes_written =  0
         resp = False
-        # print(self.open_port())
-        exit_flag = False
         if self.open_port() and not self.ser.in_waiting:
             bytes_written = self.ser.write(self.modbus_cmd)
-            # print(self.ser.out_waiting)
+            # print("out_waiting:", self.ser.out_waiting)
+            # print("in_waiting:", self.ser.in_waiting)
             # time.sleep(0.05)
             if bytes_written:
                 while not self.ser.out_waiting and not resp:
                     resp = self.ser.readall()
+                    # resp = self.ser.read(self.ser.in_waiting)
                 # print(resp)
-                self.ser.flush()
+                # self.ser.flush()
         return resp
 
     # 写入命令的排队队列

@@ -36,9 +36,12 @@ class Kpr(SerialDeviceBase):
         # 获取高位和低位的测量数据
         sp = weight_hex_value.split(",")[3:7]
         # 十六进制转换为十进制，并乘以分度值
-        calc_weight = int("".join(sp), 16) * 0.01 
-        weight_dec = round(calc_weight, 3)
-        return [sp, weight_dec]
+        print(sp)
+        # exit()
+        if sp and len(sp) > 0:
+            calc_weight = int("".join(sp), 16) * 0.01 
+            weight_dec = round(calc_weight, 3)
+            return [sp, weight_dec]
     
 
     # 对重量为负的情况进行处理
@@ -140,9 +143,12 @@ if __name__ == "__main__":
         # print("去皮：", remove_stick)
         retbytes = kpr.get_weight_value()
         # response = " ".join(map(lambda x: "%02x" % x, retbytes))
-        weight_dec = kpr.calc_weight(retbytes.hex(","))
-        # print(response)
-        resp.append(weight_dec)
+        if retbytes:
+            # time.sleep(2)
+            weight_dec = kpr.calc_weight(retbytes.hex(","))
+            # print(response)
+            resp.append(weight_dec) 
+        
         if time.time() - start >= 1:
             time_elapsed = "计算时间：{}".format(start - time.time())
             print(time_elapsed)

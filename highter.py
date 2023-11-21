@@ -1,8 +1,11 @@
 import sys
-import ser
+import time
 from serial_device_base import SerialDeviceBase
 
 # 高光幕
+# 光幕型号:ESCL16005L1RZ-1
+# 光幕光束:160个 0.5mm LED
+
 class Highter(SerialDeviceBase):
 
     def __init__(self, *args, **kwargs):
@@ -38,7 +41,18 @@ if __name__ == "__main__":
     highter = Highter("COM8", 115200)
     modbus = "03 03 00 00 00 0F 04 2C"
     modbus = bytes.fromhex(modbus)
+    start = time.time()
+    resp_list = []
+    loop = 0
     while True:
+        loop += 1
         resp = highter.execute_command(modbus)
-        print(resp)
-   
+        # print(resp)
+        if resp:
+            print(resp.hex())
+            resp_list.append(resp)
+        time.sleep(0.1)
+
+        if time.time() - start >= 6:
+            print(loop, len(resp_list), resp_list)
+            break
