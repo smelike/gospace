@@ -9,6 +9,8 @@
 # print(speed_cmd)
 # exit()
 
+# 计算crc16校验
+# return checksum's decimal integer, in hexadecimal: 高8位低8位
 def crc16(data: bytes):
     crc = 0xFFFF
     for b in data:
@@ -28,17 +30,7 @@ def crc16_modbus(data: str):
     cmd = f"{data} {hex(crc)[4:]} {hex(crc)[2:4]}"
     return cmd
 
-data = bytes.fromhex('01 03 04 ff ff ff ff')
-crc = crc16(data)
-hexcrc = hex(crc)
-print(crc, hexcrc[2:4], hexcrc[4:])
-print(f"CRC16: {crc:04x}")
 
-print(crc16_modbus('01 03 04 ff ff ff ff'))
-
-# data = bytes.fromhex('01 06 30 05 0B B8')
-# crc = crc16(data)
-# print(f"CRC16: {crc:04x}")
 
 if __name__ == '__main__':
     # for num in range(51):
@@ -48,4 +40,13 @@ if __name__ == '__main__':
     #     fn.dp(crc_16)
     #  01 10 00 54 00 02 04 7f ff ff ff 
     # cmd = '01 06 30 05 0B B8'
-    pass
+    # data = bytes.fromhex('01 06 30 05 0B B8')
+    # crc = crc16(data)
+    # print(f"CRC16: {crc:04x}")
+    data = bytes.fromhex('01 03 04 ff ff ff ff')
+    crc = crc16(data)
+    hexcrc = hex(crc)
+    print(f"cmd: 01 03 04 ff ff ff ff, checksum:{crc}, 低8位:{hexcrc[2:4]}, 高8位:{hexcrc[4:]}")
+    print(f"CRC16: {crc:04x}")
+    print(crc16_modbus('01 03 04 ff ff ff ff'))
+
