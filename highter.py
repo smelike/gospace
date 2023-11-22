@@ -12,17 +12,19 @@ class Highter(SerialDeviceBase):
         # 串口
        super(Highter, self).__init__(*args, **kwargs)
 
-    def formatHex(argv):
-        result = ''
-        hLen = len(argv)
-        for i in range(hLen):
-            if isinstance(argv[i], int):
-                hvol = argv[i]
-            else:
-                hvol = ord(argv[i])
-            hhex = '%02x' % hvol
-            result += hhex + ' '
-        return result
+ 
+    def get_height_value(self):
+        modbus = "03 03 00 00 00 0F 04 2C"
+        modbus = bytes.fromhex(modbus)
+        respBytes = self.execute_command(modbus)
+        if respBytes and len(respBytes) > 2:
+            # 0 1 2 3 ~ len - 2
+            heightBytes = respBytes[3:len(respBytes)-2]
+            # print(heightBytes)
+            data_bytes = heightBytes
+            return [data_bytes[i:i+3].hex() for i in range(0, len(data_bytes), 3)]
+        else:
+            return None
 
 # 返回数据：摆放不动的箱子
 # 03 03 00 00 00 0F 04 2C □
@@ -46,14 +48,15 @@ if __name__ == "__main__":
     loop = 0
     while True:
         loop += 1
-        print("((发)){0}:".format(time.time() * 1000), modbus.hex())
-        resp = highter.execute_command(modbus)
-        # print("returns{}:".format(loop), resp)
-        if resp:
-            print("[[收]]{0}:".format(time.time() * 1000), resp.hex())
-            resp_list.append(resp)
-        time.sleep(0.1)
+        print(highter.get_height_value())
+        # print("((发)){0}:".format(time.time() * 1000), modbus.hex())
+        # resp = highter.execute_command(modbus)
+        # # print("returns{}:".format(loop), resp)
+        # if resp:
+        #     print("[[收]]{0}:".format(time.time() * 1000), resp.hex())
+        #     resp_list.append(resp)
+        # time.sleep(0.1)
 
-        if time.time() - start >= 3:
-            print(loop, len(resp_list), resp_list)
-            break
+        # if time.time() - start >= 3:
+        #     print(loop, len(resp_list), resp_list)
+        #     break

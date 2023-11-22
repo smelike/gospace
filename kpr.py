@@ -29,9 +29,10 @@ class Kpr(SerialDeviceBase):
         modbus = "010300500002c41a"
         modbus = bytes.fromhex(modbus)
         respBytes = self.execute_command(modbus)
-        
+        print(respBytes)
         if respBytes:
             weightBytes = respBytes[3:7]
+            print(weightBytes)
             we = int.from_bytes(weightBytes, byteorder='big', signed=True)
             return round(we * 0.01, 3)
 
