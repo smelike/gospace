@@ -10,7 +10,7 @@ class SerialDeviceBase:
     """
     Base class for serial devices.
     """
-    def __init__(self, port: str, baudrate: int, timeout: float = 0):
+    def __init__(self, port: str, baudrate: int, timeout: float = 0.01):
         """
         Initialize a new instance of the SerialDeviceBase class.
 
