@@ -24,25 +24,16 @@ class Kpr(SerialDeviceBase):
         # print(*args)
         super(Kpr, self).__init__(*args, **kwargs)
 
+    # 返回重量值
     def get_weight_value(self):
         modbus = "010300500002c41a"
         modbus = bytes.fromhex(modbus)
-        resp = self.execute_command(modbus)
-        return resp
-    
-    # 计算十进制的重量
-    def calc_weight(self, weight_hex_value):
-        # print(weight_hex_value.hex("-"))
-        # 获取高位和低位的测量数据
-        sp = weight_hex_value.split(",")[3:7]
-        # 十六进制转换为十进制，并乘以分度值
-        print(sp)
-        # exit()
-        if sp and len(sp) > 0:
-            calc_weight = int("".join(sp), 16) * 0.01 
-            weight_dec = round(calc_weight, 3)
-            return [sp, weight_dec]
-    
+        respBytes = self.execute_command(modbus)
+        
+        if respBytes:
+            weightBytes = respBytes[3:7]
+            we = int.from_bytes(weightBytes, byteorder='big', signed=True)
+            return round(we * 0.01, 3)
 
     # 对重量为负的情况进行处理
     # 如：返回值为 'ff', 'ff', 'ff', 'd4'
@@ -71,7 +62,7 @@ class Kpr(SerialDeviceBase):
         modbus = "01 10 00 5E 00 01 02 00 01 6A EE"
         modbus = bytes.fromhex(modbus)
         resp = self.execute_command(modbus)
-        return resp
+        exit("执行手动置零返回：{}".format(resp.hex()))
 
     # 设置分度
     def set_scale(self):
@@ -141,13 +132,8 @@ if __name__ == "__main__":
         # 01 03 04 ff ff ff ff fb a7
         # remove_stick = kpr.remove_stick()
         # print("去皮：", remove_stick)
-        retbytes = kpr.get_weight_value()
-        # response = " ".join(map(lambda x: "%02x" % x, retbytes))
-        if retbytes:
-            # time.sleep(2)
-            weight_dec = kpr.calc_weight(retbytes.hex(","))
-            # print(response)
-            resp.append(weight_dec) 
+        weight = kpr.get_weight_value()
+        resp.append(weight) 
         
         if time.time() - start >= 1:
             time_elapsed = "计算时间：{}".format(start - time.time())
