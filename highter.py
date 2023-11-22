@@ -38,7 +38,7 @@ class Highter(SerialDeviceBase):
 # [17:10:14.660]收←◆03 03 1E 37 02 36 37 02 36 37 02 36 37 02 36 37 02 36 37 02 36 37 02 36 37 02 36 37 02 36 37 02 36 AD D9 
 
 if __name__ == "__main__":
-    highter = Highter("COM8", 115200)
+    highter = Highter("COM8", 115200, timeout=0.02)
     modbus = "03 03 00 00 00 0F 04 2C"
     modbus = bytes.fromhex(modbus)
     start = time.time()
@@ -48,12 +48,12 @@ if __name__ == "__main__":
         loop += 1
         print("((发)){0}:".format(time.time() * 1000), modbus.hex())
         resp = highter.execute_command(modbus)
-        # print(resp)
+        # print("returns{}:".format(loop), resp)
         if resp:
             print("[[收]]{0}:".format(time.time() * 1000), resp.hex())
             resp_list.append(resp)
         time.sleep(0.1)
 
-        if time.time() - start >= 6:
+        if time.time() - start >= 3:
             print(loop, len(resp_list), resp_list)
             break

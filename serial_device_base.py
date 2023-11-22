@@ -10,15 +10,19 @@ class SerialDeviceBase:
     """
     Base class for serial devices.
     """
-    ser = None
-    def __init__(self, port: str, baudrate: int, timeout: int = 0):
+    def __init__(self, port: str, baudrate: int, timeout: float = 0):
         """
         Initialize a new instance of the SerialDeviceBase class.
 
         :param port: The port to connect to.
         :param baudrate: The baud rate.
-        :param timeout: The timeout value.
+        :param timeout: timeout (float) – Set a read timeout value in seconds.
+        timeout = None, 永远处于等待，或收到请求的字节数后，立即返回。必须要与 read() 或 read_until(expected=LF, size=None) 一起使用。
+        timeout = 0, 立即返回，无论是否有数据。上限就是返回所要求的字节数。
+        timeout = x, 请求数据是可用时，就立刻返回；否则，等待 x 秒，并返回所有收到的字节数。
+        （考虑到设备的响应时间，一般 timeout = 0.015~0.025）
         """
+        self.ser = None
         self.port = port
         self.baudrate = baudrate
         self.timeout = timeout
