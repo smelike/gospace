@@ -59,7 +59,28 @@ class Zdrv(SerialDeviceBase):
     # 构建指令
     def build_command(self, cmd_type :int, addr :int, data :bytes):
         pass
+    
+    def control_motor(self, motor_address: int = 1, action: str = 'start'):
+        """
+        Controls the motor.
 
+        Parameters:
+            motor_address (int): The address of the motor to control. Default is 1.
+            action (str): The action to perform. Can be 'start', 'stop', or 'reverse'. Default is 'start'.
+        """
+        if action == 'start':
+            # Start the motor
+            command = self.build_command(cmd_type=1, addr=motor_address, data=b'\x00\x01')
+        elif action == 'stop':
+            # Stop the motor
+            command = self.build_command(cmd_type=1, addr=motor_address, data=b'\x00\x00')
+        elif action == 'reverse':
+            # Reverse the motor
+            command = self.build_command(cmd_type=1, addr=motor_address, data=b'\x00\x02')
+        else:
+            raise ValueError("Invalid action. Must be 'start', 'stop', or 'reverse'.")
+
+        self.execute_command(command)
     # 启动电机
     def turn_on(self, motor_address :int = 1):
         # 地址：2000H
