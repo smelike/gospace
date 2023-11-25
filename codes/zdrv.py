@@ -56,6 +56,10 @@ class Zdrv(SerialDeviceBase):
     def __init__(self, *args, **kwargs):
         super(Zdrv, self).__init__(*args, **kwargs)
 
+    # 构建指令
+    def build_command(self, cmd_type :int, addr :int, data :bytes):
+        pass
+
     # 启动电机
     def turn_on(self, motor_address :int = 1):
         # 地址：2000H
@@ -85,7 +89,7 @@ class Zdrv(SerialDeviceBase):
     # 关闭电机
     def turn_stop(self):
         if self.ser.is_open:
-            cmd_byte = bytes.fromhex("01 06 20 00 00 05 42 09")
+            cmd_byte = bytes.fromhex("02 06 20 00 00 05 42 09")
             resp = self.execute_command(cmd_byte)
             print(" ".join(map(lambda x: "%02x" % x, resp)))
             if resp == cmd_byte:
