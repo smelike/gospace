@@ -31,6 +31,9 @@ def crc16_modbus(data: str):
     return cmd
 
 
+def int_to_hex(n, length):
+    return format(n, '0{}x'.format(length))
+
 
 if __name__ == '__main__':
     # for num in range(51):

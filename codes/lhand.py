@@ -1,6 +1,5 @@
 from serial_device_base import SerialDeviceBase
 import time
-import sys
 
 # 厂家建议，在 9600 速率下，读取时间间隔是 200 ms 以上。
 # 9600 速率下，1 秒内只有 3 次；
@@ -24,7 +23,7 @@ class Lhand(SerialDeviceBase):
     # 获取某个输入的状态
     def read_in_by_channel(self, inchannel = 1):
         pass
-    
+
     # 继电器状态切换 
     def swith():
         pass
