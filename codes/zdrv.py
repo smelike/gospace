@@ -2,6 +2,13 @@ from serial_device_base import SerialDeviceBase
 import time
 from crc16 import crc16_modbus
 
+# Constants for addresses
+BROADCAST_ADDRESS = 0x00
+RESERVED_ADDRESS_START = 0x80
+
+# Constants for commands
+READ_REGISTER = 0x03
+
 class Zdrv(SerialDeviceBase):
     # ZDRV.C20 - 120S2
     # MODBUS-RTU 方式
@@ -59,7 +66,7 @@ class Zdrv(SerialDeviceBase):
     # 构建指令
     def build_command(self, cmd_type :int, addr :int, data :bytes):
         pass
-    
+
     def control_motor(self, motor_address: int = 1, action: str = 'start'):
         """
         Controls the motor.
