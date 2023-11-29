@@ -27,7 +27,10 @@ def crc16(data: bytes):
 # 如：01 03 04 ff ff ff ff, 带上校验码后：01 03 04 ff ff ff ff a7 fb
 def crc16_modbus(data: str):
     crc = crc16(bytes.fromhex(data))
-    cmd = f"{data} {hex(crc)[4:]} {hex(crc)[2:4]}"
+    print("crc:", crc, hex(crc))
+    crcl = format(int(hex(crc)[4:], 16), '02x')
+    crch = format(int(hex(crc)[2:4], 16), '02x')
+    cmd = f"{data} {crcl} {crch}"
     return cmd
 
 

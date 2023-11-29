@@ -3,7 +3,9 @@ import time
 from crc16 import crc16_modbus
 
 # Constants for addresses
+# 广播地址
 BROADCAST_ADDRESS = 0x00
+# 保留地址
 RESERVED_ADDRESS_START = 0x80
 
 # Constants for commands
@@ -89,9 +91,9 @@ class Zdrv(SerialDeviceBase):
 
         self.execute_command(command)
     # 启动电机
-    def turn_on(self, motor_address :int = 1):
+    def turn_on(self, motor_address :int = 0x1):
         # 地址：2000H
-        # 01 06 20 00 00 {00 01} 43 CA 
+        # 01 06 20 00 {00 01} 43 CA 
         # 00 01 - 正转
         # 00 02 - 反转
         # 00 03 - 正转点动
@@ -101,25 +103,27 @@ class Zdrv(SerialDeviceBase):
         # 00 07 - 故障复位
         # 00 08 - 点动停止
         # 00 09 - 刹车停机
-        motor_hex_addr = str(hex(motor_address))[2:].zfill(2)
-        print(motor_hex_addr)
+        motor_hex_addr = format(motor_address, '02x')
         cmd = f"{motor_hex_addr} 06 20 00 00 01"
         cmd_crc = crc16_modbus(cmd)
-        print(cmd_crc)
+        print(__class__, cmd_crc)
         cmd_byte = bytes.fromhex(cmd_crc)
-        # cmd_byte = bytes.fromhex("02 06 20 00 00 01 43 CA")
         resp = self.execute_command(cmd_byte)
         if resp == cmd_byte:
-            print("启动电机成功", resp)
+            print("启动电机成功", resp.hex())
         else:
-            print("启动电机失败", resp)
+            print("启动电机失败", resp.hex())
     
     # 关闭电机
     def turn_stop(self):
         if self.ser.is_open:
-            cmd_byte = bytes.fromhex("02 06 20 00 00 05 42 09")
-            resp = self.execute_command(cmd_byte)
-            print(" ".join(map(lambda x: "%02x" % x, resp)))
+            for i in ['01', '02', '03']:
+                cmd = f"{i} 06 20 00 00 05"
+                cmd_crc = crc16_modbus(cmd)
+                print(cmd_crc)
+                cmd_byte = bytes.fromhex(cmd_crc)
+                resp = self.execute_command(cmd_byte)
+                print(" ".join(map(lambda x: "%02x" % x, resp)))
             if resp == cmd_byte:
                 print("关闭电机成功", resp)
             else:
@@ -127,24 +131,23 @@ class Zdrv(SerialDeviceBase):
         else:
             print("串口未打开")
 
-    def set_rpm(self, rpm = 3000):
+    def set_rpm(self, rpm: int = 3000):
         # 2001H 通讯设定转速 
         # 3000rpm - 01 06 20 01 0B B8 D4 88 
         # 地址 2001H写0x0BB8，设定转速 3000RPM
         if not rpm:
             rpm = 1630
-        cmd = "02 06 20 01"
-        motor_speed = str(hex(rpm))[2:].zfill(4)
+        motor_speed = format(rpm, '04x')
         cmd = f"02 06 20 01 {motor_speed}"
         cmd_crc = crc16_modbus(cmd)
         print(cmd_crc)
         cmd_byte = bytes.fromhex(cmd_crc)
         resp = self.execute_command(cmd_byte)
-        print(" ".join(map(lambda x: "%02x" % x, resp)))
+        # print(" ".join(map(lambda x: "%02x" % x, resp)))
         if resp == cmd_byte:
-            print("设置转速成功", resp)
+            print("设置转速成功", resp.hex())
         else:
-            print("设置转速失败", resp)
+            print("设置转速失败", resp.hex())
 
     # 电机状态
     def run_status(self):
@@ -159,12 +162,14 @@ class Zdrv(SerialDeviceBase):
 if __name__ == "__main__":
         print("start")
         rm = Zdrv("COM15", 19200)
-        rm.turn_on(2)
-        time.sleep(8)
-        rm.set_rpm()
-        time.sleep(6)
-        rm.set_rpm(rpm = 1630)
+        rm.turn_on(3) # forward
+        # time.sleep(3)
+        rm.turn_on(2) # left or right
+        time.sleep(12)
+        # rm.set_rpm(2600)
+        # time.sleep(6)
+        # rm.set_rpm(rpm = 1630)
         # rm.turn_on()
-        time.sleep(8)
+        # time.sleep(8)
         rm.turn_stop()
         print("end")
