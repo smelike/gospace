@@ -26,12 +26,14 @@ class Kpr(SerialDeviceBase):
 
     # 返回重量值
     def get_weight_value(self):
-        modbus = "010300500002c41a"
+        modbus = "010300000001840a"
         modbus = bytes.fromhex(modbus)
         respBytes = self.execute_command(modbus)
         # print(respBytes) 
         if respBytes:
-            weightBytes = respBytes[3:7]
+            start = 3
+            end = start + int(respBytes[2])
+            weightBytes = respBytes[start:end]
             print(weightBytes)
             we = int.from_bytes(weightBytes, byteorder='big', signed=True)
             return round(we * 0.01, 3)
@@ -125,7 +127,12 @@ if __name__ == "__main__":
     # kpr = Kpr("COM3", 19200)
     
     # 测试2
-    kpr = Kpr("COM6", 19200, 0.02)
+    # t90 
+    # 波特率：19200，滤波：3~5 
+    #   20ms - 17
+    #   10ms - 25
+    #   0ms - 62
+    kpr = Kpr("COM9", 115200, 0)
     # print("置零", kpr.set_zero())
     start = time.time()
     resp = []
