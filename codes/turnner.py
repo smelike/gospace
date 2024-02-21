@@ -27,6 +27,16 @@ class TurnController():
     def get_direction(self):
         return self.direction
 
+    # direction 整个分拣模块的动作
+    # blockNo 分拣模块的区块号
+    def run(self, direction: str, blockNo: int = 1):
+        if direction == "left":
+            self.turn_left()
+        elif direction == "right":
+            self.turn_right()
+        else:
+            print("Invalid direction")
+
 # Example usage:
 controller = TurnController()
 print(controller.get_direction())  # Output: "straight"

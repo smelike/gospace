@@ -132,7 +132,7 @@ if __name__ == "__main__":
     #   20ms - 17
     #   10ms - 25
     #   0ms - 62
-    kpr = Kpr("COM9", 115200, 0)
+    kpr = Kpr("COM9", 19200, 0)
     # print("置零", kpr.set_zero())
     start = time.time()
     resp = []
@@ -141,13 +141,13 @@ if __name__ == "__main__":
         # remove_stick = kpr.remove_stick()
         # print("去皮：", remove_stick)
         weight = kpr.get_weight_value()
-        resp.append(weight) 
+        if weight: resp.append(weight) 
         
-        if time.time() - start >= 1:
+        if time.time() - start >= 180:
             time_elapsed = "计算时间：{}".format(start - time.time())
             print(time_elapsed)
             break
         # time.sleep(1)
     print(len(resp), resp)
     
-
+  
