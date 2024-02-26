@@ -26,11 +26,15 @@ def crc16(data: bytes):
 # 计算modbus指令的crc16校验，并返回字节尾带有验证码的指令
 # 如：01 03 04 ff ff ff ff, 带上校验码后：01 03 04 ff ff ff ff a7 fb
 def crc16_modbus(data: str):
-    crc = crc16(bytes.fromhex(data))
-    print("crc:", crc, hex(crc))
-    crcl = format(int(hex(crc)[4:], 16), '02x')
-    crch = format(int(hex(crc)[2:4], 16), '02x')
-    cmd = f"{data} {crcl} {crch}"
+    crc16_decimal_data = crc16(bytes.fromhex(data))
+    # format decimal crc16 data to hexadecimal digits
+    print("format crc with x pattern", format(crc16_decimal_data, "x"))
+    crcHex = format(crc16_decimal_data, "x").zfill(4)
+    crcLow = crcHex[2:]
+    crcHigh = crcHex[0:2]
+    # crcLow = format(int(crcHex[2:], 16), '02x')
+    # crcHigh = format(int(crcHex[0:2], 16), '02x')
+    cmd = f"{data} {crcLow} {crcHigh}"
     return cmd
 
 
@@ -56,3 +60,11 @@ if __name__ == '__main__':
     print(f"CRC16: {crc:04x}")
     print(crc16_modbus('01 03 04 ff ff ff ff'))
 
+
+    print("\\r\\n---------[Error Test: Set RPM]-----------\\r\\n")
+
+    motor_addr_hex = format(3, "02x") #03
+    speed_hex = format(2000, "04x") # 0320
+    cmd = f"03 06 20 01 {speed_hex}"
+    cmd_crc = crc16_modbus(cmd)
+    print("cmd_crc:", cmd_crc)

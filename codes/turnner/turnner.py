@@ -61,7 +61,7 @@ class TurnController():
         else:
             print("Invalid direction")
 
-    def stop():
+    def stop(self):
         rm = Zdrv("COM19", 19200)
         rm.turn_stop()
 

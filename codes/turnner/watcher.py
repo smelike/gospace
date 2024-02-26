@@ -21,7 +21,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
         print("2/ 执行分拣模块转向动作: 左转\r\n")
         self.wfile.write(b'2 sort turn left \x3c\x5c\x62\x72\x3e')
-        turnner.run("left", 1)
+        turnner.run("right", 1)
         self.wfile.write(b'Hello, World!')
 
     def do_POST(self):
