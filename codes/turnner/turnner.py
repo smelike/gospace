@@ -29,7 +29,7 @@ class TurnController():
 
         rm = Zdrv("COM19", 19200)
         rm.turn_on(3, 1) # forward 黄色小轮子
-        # rm.set_rpm(800, 3) # 会有报错，待测试
+        # rm.set_rpm(800, 3) # 会有报错，待测试[@2024.02.26 修复，crc16_modbus_hex 不够位数引发的错误]
         rm.set_rpm(1200, 3) # 给黄色小轮子设置转速  
        
         rm.turn_on(2) # left or right 绿色大轮子
