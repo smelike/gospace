@@ -170,16 +170,39 @@ class Zdrv(SerialDeviceBase):
 
 if __name__ == "__main__":
         print("start")
-        rm = Zdrv("COM19", 19200)
-        rm.turn_on(3, 1) # forward 黄色小轮子
-        rm.set_rpm(1200, 3)  
-       
-        rm.turn_on(2 , 2) # left or right
-        rm.set_rpm(1000, 2)
+
+        # mod 1
+        # rm = Zdrv("COM3", 19200)
+        # rm.turn_on(3, 1) # forward 黄色小轮子
+        # rm.set_rpm(1200, 3)  
+        # time.sleep(6)
+        # rm.turn_on(2 , 2) # left or right
+        # rm.set_rpm(1000, 2)
         # rm.set_rpm(2600)
         # time.sleep(6)
         # rm.set_rpm(rpm = 1630)
         # rm.turn_on()
+
+
+        # mod 2
+        # rm = Zdrv("COM4", 19200)
+        # rm.turn_on(5, 1) # forward 黄色小轮子
+        # rm.set_rpm(1200, 5)  
+        # time.sleep(6)
+        # rm.turn_on(6 , 2) # left or right
+        # rm.set_rpm(1000, 6)
+        # time.sleep(30)
+        # rm.turn_stop()
+        # print("end")
+
+
+        # mod 3
+        rm = Zdrv("COM13", 19200)
+        rm.turn_on(8, 1) # forward 黄色小轮子
+        rm.set_rpm(1200, 8)  
+        time.sleep(6)
+        rm.turn_on(9 , 2) # left or right
+        rm.set_rpm(1000, 9)
         time.sleep(30)
         rm.turn_stop()
         print("end")

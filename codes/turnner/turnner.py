@@ -24,7 +24,7 @@ class TurnController():
         self.baudrate = baudrate
         self.rm = Zdrv(self.com, self.baudrate)
 
-    def straight_forward(self):
+    def straight_forward(self, speed: int = 1630):
         # 所有滚筒段，都是往前走的。
         self.turn_roller_motor(1630)
         # 保证所有分拣卡口的，黄色小轮子都是向前走的。
