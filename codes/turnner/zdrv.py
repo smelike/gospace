@@ -113,6 +113,7 @@ class Zdrv(SerialDeviceBase):
         try:
             resp = self.execute_command(cmd_byte)
         except Exception as e:
+            print("Error happens when execute command", e)
             return False
         
         if resp == cmd_byte:
