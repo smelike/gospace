@@ -26,9 +26,9 @@ class TurnController():
 
     def straight_forward(self, speed: int = 1630):
         # 所有滚筒段，都是往前走的。
-        self.turn_roller_motor(1630)
+        self.turn_roller_motor(speed)
         # 保证所有分拣卡口的，黄色小轮子都是向前走的。
-        self.turn_forward_motor(1630)
+        self.turn_forward_motor(speed)
 
     # 打开滚筒
     def turn_roller_motor(self, speed: int = 1630):
