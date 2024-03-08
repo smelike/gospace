@@ -107,9 +107,14 @@ class Zdrv(SerialDeviceBase):
         reverse_hex_addr = format(reverse, "02x")
         cmd = f"{motor_hex_addr} 06 20 00 00 {reverse_hex_addr}"
         cmd_crc = crc16_modbus(cmd)
-        print(__class__, cmd_crc)
+        #print(__class__, cmd_crc)
         cmd_byte = bytes.fromhex(cmd_crc)
-        resp = self.execute_command(cmd_byte)
+
+        try:
+            resp = self.execute_command(cmd_byte)
+        except Exception as e:
+            return False
+        
         if resp == cmd_byte:
             print("启动电机成功", resp.hex())
         else:
@@ -165,9 +170,7 @@ class Zdrv(SerialDeviceBase):
 if __name__ == "__main__":
         print("start")
         rm = Zdrv("COM19", 19200)
-        rm.turn_on(3, 1) # forward
-        #time.sleep(3)
-        # rm.set_rpm(800, 3) # 会有报错，待测试
+        rm.turn_on(3, 1) # forward 黄色小轮子
         rm.set_rpm(1200, 3)  
        
         rm.turn_on(2 , 2) # left or right
