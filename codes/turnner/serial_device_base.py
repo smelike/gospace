@@ -32,6 +32,7 @@ class SerialDeviceBase:
         self.baudrate = baudrate
         self.timeout = timeout
         self.modbus_cmd = ""
+        self.open_port()
         
     # AttributeError: 'NoneType' object has no attribute 'is_open'
     def open_port(self):
@@ -56,7 +57,7 @@ class SerialDeviceBase:
         self.modbus_cmd = modbus_cmd
         bytes_written = 0
         resp = False
-        
+
         if self.ser is not None:
             if self.ser.in_waiting:
                 # 有排队等待的状况，则做sleep 3s 处理（待观察调整）
