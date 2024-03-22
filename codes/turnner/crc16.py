@@ -6,8 +6,10 @@
 # speed_cmd = f"{motor_addr} 06 20 01 {motor_speed[:2]} {motor_speed[2:]}"
 # speed_cmd_crc_16 = get_crc16_modbus(speed_cmd)
 # speed_cmd = f"{speed_cmd} {speed_cmd_crc_16}"
-# print(speed_cmd)
+# fn.logger(speed_cmd)
 # exit()
+from common import fn
+
 
 # 计算crc16校验
 # return checksum's decimal integer, in hexadecimal: 高8位低8位
@@ -28,7 +30,7 @@ def crc16(data: bytes):
 def crc16_modbus(data: str):
     crc16_decimal_data = crc16(bytes.fromhex(data))
     # format decimal crc16 data to hexadecimal digits
-    print("format crc with x pattern", format(crc16_decimal_data, "x"))
+    fn.logger("crc16 format crc with x pattern " + format(crc16_decimal_data, "x"))
     crcHex = format(crc16_decimal_data, "x").zfill(4)
     crcLow = crcHex[2:]
     crcHigh = crcHex[0:2]
@@ -51,20 +53,22 @@ if __name__ == '__main__':
     #  01 10 00 54 00 02 04 7f ff ff ff 
     # cmd = '01 06 30 05 0B B8'
     # data = bytes.fromhex('01 06 30 05 0B B8')
+    # data = bytes.fromhex("03 03 21 02 00 01")
     # crc = crc16(data)
     # print(f"CRC16: {crc:04x}")
-    data = bytes.fromhex('01 03 04 ff ff ff ff')
+    # exit(200)
+    data = bytes.fromhex('03 03 21 02 00 01')
     crc = crc16(data)
     hexcrc = hex(crc)
-    print(f"cmd: 01 03 04 ff ff ff ff, checksum:{crc}, 低8位:{hexcrc[2:4]}, 高8位:{hexcrc[4:]}")
-    print(f"CRC16: {crc:04x}")
-    print(crc16_modbus('01 03 04 ff ff ff ff'))
+    fn.logger(f"crc16 cmd: 01 03 04 ff ff ff ff, checksum:{crc}, 低8位:{hexcrc[2:4]}, 高8位:{hexcrc[4:]}")
+    fn.logger(f"crc16 CRC16: {crc:04x}")
+    fn.logger(str(crc16_modbus('03 03 21 02 00 01')))
 
 
-    print("\\r\\n---------[Error Test: Set RPM]-----------\\r\\n")
+    fn.logger("crc16 \\r\\n---------[Error Test: Set RPM]-----------\\r\\n")
 
     motor_addr_hex = format(3, "02x") #03
     speed_hex = format(2000, "04x") # 0320
     cmd = f"03 06 20 01 {speed_hex}"
     cmd_crc = crc16_modbus(cmd)
-    print("cmd_crc:", cmd_crc)
+    fn.logger("crc16 cmd_crc: " + cmd_crc)

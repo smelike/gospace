@@ -1,19 +1,21 @@
-import serial
-
 # 串口设备的父类
 
+from __future__ import absolute_import
+
 import serial
 
+from serial.serialutil import SerialException, PortNotOpenError, SerialTimeoutException
+
+# from common import fn
+
+
 # 串口设备的父类
-
-class OpenPortError(Exception):
-    pass
-
 class SerialDeviceBase:
     """
     Base class for serial devices.
     """
-    def __init__(self, port: str, baudrate: int, timeout: float = 0.01):
+
+    def __init__(self, port: str, baudrate: int, timeout: float = 0.01,):
         """
         Initialize a new instance of the SerialDeviceBase class.
 
@@ -30,72 +32,55 @@ class SerialDeviceBase:
         self.baudrate = baudrate
         self.timeout = timeout
         self.modbus_cmd = ""
-        # self.open_port()
-
+        
+    # AttributeError: 'NoneType' object has no attribute 'is_open'
     def open_port(self):
+       if self.ser is None:
         try:
-            if isinstance(self.ser, serial.Serial):
-                return True
-            if self.port and self.baudrate:
-                self.ser = serial.Serial(self.port, self.baudrate, timeout = self.timeout)
-                if not self.ser.is_open:
-                    print("open port success")
-                    return False
-                # if self.ser.timeout == 0.015:
-                #     print("open port timeout")
-                #     return False
-                return True
-            return False
-        except Exception as e:
-            print(f"Error opening serial port: {e}")
-            raise OpenPortError("Error opening serial port: {e}")
-            # return False
-    
+            self.ser = serial.Serial(self.port, self.baudrate, timeout=self.timeout)
+        except SerialException as e:
+            raise e
+        
     def read_data(self, len: int = 0) -> bytes:
-        if self.open_port():
-            return self.ser.readall()
-        if self.open_port and len:
-            return self.ser.read(len)
-        print("not open port")
+        if self.ser is not None:
+            if len:
+                data_readed = self.ser.read(len)
+            else:
+                data_readed = self.ser.readall()
+            return data_readed
         return False
+    
+
     # 执行指令,并返回响应值
     def execute_command(self, modbus_cmd: bytes) -> bytes:
         self.modbus_cmd = modbus_cmd
-        bytes_written =  0
+        bytes_written = 0
         resp = False
-        if self.open_port() and not self.ser.in_waiting:
-            try:
-                bytes_written = self.ser.write(self.modbus_cmd)
-                # print("out_waiting:", self.ser.out_waiting)
-                # print("in_waiting:", self.ser.in_waiting)
-                # time.sleep(0.05)
-                if bytes_written:
-                    while not self.ser.out_waiting and not resp:
-                        resp = self.ser.readall()
-                        # resp = self.ser.read(self.ser.in_waiting)
-                    # print(resp)
-                    # self.ser.flush()
-            except Exception as e:
-                print(f"Error executing command: {e}")
+        if not self.ser.in_waiting:
+            bytes_written = self.ser.write(self.modbus_cmd)
+            if bytes_written:
+                while not self.ser.out_waiting and not resp:
+                    resp = self.ser.readall()
+                # fn.logger(resp)
+                # self.ser.flush()
         return resp
 
     # 写入命令的排队队列
     def __command_queue(self):
         pass
+
     # 退出时,做了串口的关闭,防止串口的占用
     def __exit__(self):
-        try:
-            self.ser.close()
-        except Exception as e:
-            print(f"Error closing serial port: {e}")
+       if self.ser is not None:
+         self.ser.__del__()
         # serial.close() # close() is a method of serial.Serial object, Close port immediately.
         # serial.__del__() # close() Close port when serial port instance is free.
 
 
-
 if __name__ == "__main__":
-    base = SerialDeviceBase("COM5", 9600)
+    base = SerialDeviceBase("COM5", 19200)
     cmd = "FE0100000002A9C4"
-    cmd = bytes.fromhex(cmd)
+    cmd_hex = bytes.fromhex(cmd)
     print(cmd)
-    print(base.execute_command(cmd))
+    print(cmd_hex)
+    print(base.execute_command(cmd_hex))

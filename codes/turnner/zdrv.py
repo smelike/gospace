@@ -1,6 +1,10 @@
+from __future__ import absolute_import
+
+from common import fn
 from serial_device_base import SerialDeviceBase
-import time
 from crc16 import crc16_modbus
+
+import time
 
 # Constants for addresses
 # 广播地址
@@ -77,6 +81,7 @@ class Zdrv(SerialDeviceBase):
             motor_address (int): The address of the motor to control. Default is 1.
             action (str): The action to perform. Can be 'start', 'stop', or 'reverse'. Default is 'start'.
         """
+        command = b''
         if action == 'start':
             # Start the motor
             command = self.build_command(cmd_type=1, addr=motor_address, data=b'\x00\x01')
@@ -89,7 +94,7 @@ class Zdrv(SerialDeviceBase):
         else:
             raise ValueError("Invalid action. Must be 'start', 'stop', or 'reverse'.")
 
-        self.execute_command(command)
+        return self.execute_command(command)
     # 启动电机
     def turn_on(self, motor_address :int = 1, reverse: int = 1):
         # 地址：2000H
@@ -103,40 +108,47 @@ class Zdrv(SerialDeviceBase):
         # 00 07 - 故障复位
         # 00 08 - 点动停止
         # 00 09 - 刹车停机
+        fn.logger("zdrv tunner turn on", level = "info")
         motor_hex_addr = format(motor_address, '02x')
         reverse_hex_addr = format(reverse, "02x")
         cmd = f"{motor_hex_addr} 06 20 00 00 {reverse_hex_addr}"
         cmd_crc = crc16_modbus(cmd)
-        #print(__class__, cmd_crc)
+        fn.logger(cmd_crc)
         cmd_byte = bytes.fromhex(cmd_crc)
-
+        fn.logger(self.run_status(), level ="motor_status")
+        fn.logger(cmd_crc, level = "info")
         try:
             resp = self.execute_command(cmd_byte)
         except Exception as e:
-            print("Error happens when execute command", e)
+            fn.logger("zdrv Error happens when execute command" + repr(e), level="error")
             return False
         
         if resp == cmd_byte:
-            print("启动电机成功", resp.hex())
+            fn.logger("zdrv 启动电机成功" + resp.hex())
         else:
-            print("启动电机失败", resp.hex())
+            fn.logger("zdrv 启动电机失败" + resp.hex(), level="error")
     
     # 关闭电机
-    def turn_stop(self):
-        if self.ser.is_open:
-            for i in ['01', '02', '03']:
-                cmd = f"{i} 06 20 00 00 05"
-                cmd_crc = crc16_modbus(cmd)
-                print(cmd_crc)
-                cmd_byte = bytes.fromhex(cmd_crc)
-                resp = self.execute_command(cmd_byte)
-                print(" ".join(map(lambda x: "%02x" % x, resp)))
-            if resp == cmd_byte:
-                print("关闭电机成功", resp)
-            else:
-                print("关闭电机失败", resp)
+    def turn_stop(self, motor_addr: int = 1):
+        # if self.ser.is_open:
+            # for i in ['01', '02', '03']:
+            #     cmd = f"{i} 06 20 00 00 05"
+            #     cmd_crc = crc16_modbus(cmd)
+            #     fn.logger(cmd_crc)
+            #     cmd_byte = bytes.fromhex(cmd_crc)
+            #     resp = self.execute_command(cmd_byte)
+            #     fn.logger("zdrv  ".join(map(lambda x: "%02x" % x, resp)))
+
+        motor_addr_hex = format(motor_addr, "02x")
+        cmd = f"{motor_addr_hex} 06 20 00 00 05"
+        cmd_crc = crc16_modbus(cmd)
+        fn.logger(cmd_crc)
+        cmd_byte = bytes.fromhex(cmd_crc)
+        resp = self.execute_command(cmd_byte)
+        if resp == cmd_byte:
+            fn.logger("zdrv 关闭电机成功:" + str(resp) + str(self.run_status()))
         else:
-            print("串口未打开")
+            fn.logger("zdrv 关闭电机失败:" + str(resp) + str(self.run_status()), level="error")
 
     def set_rpm(self, rpm: int = 3000, motor_address: int = 1):
         # 2001H 通讯设定转速 
@@ -147,29 +159,35 @@ class Zdrv(SerialDeviceBase):
         motor_hex_addr = format(motor_address, '02x')
         motor_speed = format(rpm, '04x')
         cmd = f"{motor_hex_addr} 06 20 01 {motor_speed}"
-        print("set_rpm_cmd:", cmd)
         cmd_crc = crc16_modbus(cmd)
-        print("set_rpm: ", cmd_crc)
+        fn.logger("zdrv set_rpm_cmd:", cmd)
+        fn.logger("zdrv set_rpm: ", cmd_crc)
         cmd_byte = bytes.fromhex(cmd_crc)
         resp = self.execute_command(cmd_byte)
-        # print(" ".join(map(lambda x: "%02x" % x, resp)))
+        # fn.logger("zdrv  ".join(map(lambda x: "%02x" % x, resp)))
         if resp == cmd_byte:
-            print("设置转速成功", resp.hex())
+            fn.logger("zdrv 设置转速成功: " + resp.hex())
+        elif hasattr(resp, 'hex'):
+            fn.logger("zdrv 设置转速失败 " + resp.hex(), level="error")
         else:
-            print("设置转速失败", resp.hex())
+            fn.logger("zdrv 设置转速失败：" + resp, level="info")
 
     # 电机状态
     def run_status(self):
-        if self.ser.is_open:
-            cmd_byte = bytes.fromhex("01 03 21 02 00 01 2F F6")
-            resp = self.execute_command(cmd_byte)
-            print(" ".join(map(lambda x: "%02x" % x, resp)))
-            print("电机状态码：", resp)
-        else:
-            print("串口未打开")
+        # if self.ser.is_open:
+            # "01 03 21 02 00 01 2F F6" -- 01 03 02 00 00 B8 44
+            # "02 03 21 02 00 01 2f c5"  -- 02 03 02 00 00 FC 44
+            # "03 03 21 02 00 01 2e 14"  -- 03 03 02 00 00 C1 84
+        cmd_byte = bytes.fromhex("02 03 21 02 00 01 2f c5")
+        resp = self.execute_command(cmd_byte)
+        # fn.logger("zdrv  ".join(map(lambda x: "%02x" % x, resp)))
+        fn.logger("zdrv 电机状态码：" + str(resp))
+        # else:
+        #     fn.logger("zdrv 串口未打开", level="error")
 
 if __name__ == "__main__":
-        print("start")
+
+        fn.logger("zdrv start")
 
         # mod 1
         # rm = Zdrv("COM3", 19200)
@@ -193,16 +211,16 @@ if __name__ == "__main__":
         # rm.set_rpm(1000, 6)
         # time.sleep(30)
         # rm.turn_stop()
-        # print("end")
+        # fn.logger("zdrv end")
 
 
         # mod 3
-        rm = Zdrv("COM13", 19200)
-        rm.turn_on(8, 1) # forward 黄色小轮子
+        rm = Zdrv("COM8", 19200)
+        rm.turn_on(2, 1) # forward 黄色小轮子
         rm.set_rpm(1200, 8)  
         time.sleep(6)
-        rm.turn_on(9 , 2) # left or right
+        rm.turn_on(3 , 2) # left or right
         rm.set_rpm(1000, 9)
         time.sleep(30)
-        rm.turn_stop()
-        print("end")
+        rm.turn_stop(1)
+        fn.logger("zdrv end")
