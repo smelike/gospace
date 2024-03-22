@@ -60,17 +60,20 @@ class TurnController():
     # 打开绿色大轮子：左转，3秒后停止
     def turn_left(self, speed: int = 1630, duration = 3):
         self.direction = "left"
+        
         self.rm.turn_on(GREEN_SWITCH_MOTOR_ADDR, YES_REVERSE)  # left or right 绿色大轮子
         self.rm.set_rpm(speed, GREEN_SWITCH_MOTOR_ADDR)  # 给大轮子设置转速
+        
         time.sleep(duration)
         self.rm.turn_stop(GREEN_SWITCH_MOTOR_ADDR)
 
     # 打开绿色大轮子：右转，3秒后停止
     def turn_right(self, speed: int = 1630, duration = 3):
         self.direction = "right"
-        # fn.logger("tunner：Turning right")
+
         self.rm.turn_on(GREEN_SWITCH_MOTOR_ADDR, NO_REVERSE)  # left or right 绿色大轮子
         self.rm.set_rpm(speed, GREEN_SWITCH_MOTOR_ADDR)  # 给大轮子设置转速
+        
         time.sleep(duration)
         self.rm.turn_stop(GREEN_SWITCH_MOTOR_ADDR)
 
