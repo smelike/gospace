@@ -1,10 +1,10 @@
 # 串口设备的父类
 
 from __future__ import absolute_import
+from serial.serialutil import SerialException, PortNotOpenError, SerialTimeoutException
 
 import serial
-
-from serial.serialutil import SerialException, PortNotOpenError, SerialTimeoutException
+import time
 
 # from common import fn
 
@@ -56,11 +56,15 @@ class SerialDeviceBase:
         self.modbus_cmd = modbus_cmd
         bytes_written = 0
         resp = False
-        if not self.ser.in_waiting:
-            bytes_written = self.ser.write(self.modbus_cmd)
-            if bytes_written:
-                while not self.ser.out_waiting and not resp:
-                    resp = self.ser.readall()
+        
+        if self.ser is not None:
+            if self.ser.in_waiting:
+                # 有排队等待的状况，则做sleep 3s 处理（待观察调整）
+                time.sleep(3)
+                bytes_written = self.ser.write(self.modbus_cmd)
+                if bytes_written:
+                    while not self.ser.out_waiting and not resp:
+                        resp = self.ser.readall()
                 # fn.logger(resp)
                 # self.ser.flush()
         return resp

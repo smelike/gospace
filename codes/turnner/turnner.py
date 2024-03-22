@@ -1,6 +1,7 @@
 from __future__ import absolute_import
-# from common import fn
 from zdrv import Zdrv
+
+# from common import fn
 
 import time
 
@@ -32,7 +33,7 @@ class TurnController():
             cls._instance = super(TurnController, cls).__new__(cls)
         return cls._instance
     
-    def __init__(self, com="com8", baudrate=19200):
+    def __init__(self, com="com5", baudrate=19200):
         self.direction = "straight"
         self.blockNo = 1
         self.com = com
@@ -59,7 +60,6 @@ class TurnController():
     # 打开绿色大轮子：左转，3秒后停止
     def turn_left(self, speed: int = 1630, duration = 3):
         self.direction = "left"
-        fn.logger("tunner: Turning left")
         self.rm.turn_on(GREEN_SWITCH_MOTOR_ADDR, YES_REVERSE)  # left or right 绿色大轮子
         self.rm.set_rpm(speed, GREEN_SWITCH_MOTOR_ADDR)  # 给大轮子设置转速
         time.sleep(duration)
@@ -68,7 +68,7 @@ class TurnController():
     # 打开绿色大轮子：右转，3秒后停止
     def turn_right(self, speed: int = 1630, duration = 3):
         self.direction = "right"
-        fn.logger("tunner：Turning right")
+        # fn.logger("tunner：Turning right")
         self.rm.turn_on(GREEN_SWITCH_MOTOR_ADDR, NO_REVERSE)  # left or right 绿色大轮子
         self.rm.set_rpm(speed, GREEN_SWITCH_MOTOR_ADDR)  # 给大轮子设置转速
         time.sleep(duration)
@@ -81,27 +81,29 @@ class TurnController():
     # blockNo 分拣模块的区块号
     def run(self, direction: str, blockNo: int = 1, speed: int = 2500):
         self.blockNo = blockNo
-        fn.logger("tunner run")
+        # fn.logger("tunner run")
         if direction == "left":
             self.turn_left(speed)
         elif direction == "right":
             self.turn_right(speed)
         else:
-            fn.logger(f"tunner Invalid direction:{direction}",level="error")
-
+            print(f"Invalid direction: {direction}")
+            # fn.logger(f"tunner Invalid direction:{direction}",level="error")
+            pass
+            
     def stop(self):
         self.rm.turn_stop()
 
 if __name__ == "__main__":
     # Example usage:
     controller = TurnController("com5", 19200)
-    fn.logger(controller.get_direction())  # Output: "straight"
+    # fn.logger(controller.get_direction())  # Output: "straight"
 
     # controller.turn_left()
     # fn.logger(controller.get_direction())  # Output: "left"
 
     # controller.turn_right()
     # fn.logger(controller.get_direction())  # Output: "right"
-
-    controller.run("left", 1)
-    controller.run("right", 1)
+    blockNo = 1
+    controller.run("left", blockNo)
+    controller.run("right", blockNo)
